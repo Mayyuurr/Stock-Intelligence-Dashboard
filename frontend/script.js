@@ -1,4 +1,4 @@
-const API_BASE = "https://stock-intelligence-dashboard-lgdh.onrender.com" | "http://127.0.0.1:8000";
+const API_BASE = "https://stock-intelligence-dashboard-lgdh.onrender.com";
 let currentChart = null;
 
 // Initialize dashboard on load
