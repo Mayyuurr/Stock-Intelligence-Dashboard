@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "https://stock-intelligence-dashboard-lgdh.onrender.com/docs" | "http://127.0.0.1:8000";
 let currentChart = null;
 
 // Initialize dashboard on load
@@ -47,13 +47,13 @@ async function loadCompanies() {
 async function searchStock(inputSymbol = null) {
     let symbol;
     const input = document.getElementById("searchInput");
-    
+
     if (inputSymbol) {
         symbol = inputSymbol;
     } else {
         symbol = input.value.trim().toUpperCase();
     }
-    
+
     if (!symbol) return;
 
     try {
