@@ -247,3 +247,69 @@ function renderChart(labels, histData, predData, symbol) {
         }
     });
 }
+
+/**
+ * 5. Compare Two Stocks
+ */
+async function compareStocks() {
+    const sym1 = document.getElementById("compareSym1").value.trim().toUpperCase();
+    const sym2 = document.getElementById("compareSym2").value.trim().toUpperCase();
+
+    if (!sym1 || !sym2) {
+        alert("Please enter both symbols to compare.");
+        return;
+    }
+
+    const resultsContainer = document.getElementById("compare-results");
+    resultsContainer.classList.remove("active");
+    resultsContainer.innerHTML = `<div class="loading">Comparing...</div>`;
+    resultsContainer.style.display = "grid"; // Make it visible briefly for loading
+    resultsContainer.classList.add("active");
+
+    try {
+        const response = await fetch(`${API_BASE}/compare?symbol1=${sym1}&symbol2=${sym2}`);
+        if (!response.ok) {
+            alert("Could not fetch comparison data. Check if symbols are valid.");
+            resultsContainer.classList.remove("active");
+            resultsContainer.style.display = "none";
+            return;
+        }
+
+        const data = await response.json();
+        
+        let html = "";
+        
+        // Helper to generate HTML for a single stock card
+        const generateCard = (symbol, stockData) => {
+            const isWinner = data.winner === symbol;
+            const returnClass = stockData.total_return_percent >= 0 ? 'text-green' : 'text-red';
+            return `
+                <div class="compare-card-stock ${isWinner ? 'winner' : ''}">
+                    ${isWinner ? '<div class="winner-badge">Winner</div>' : ''}
+                    <h4 style="font-size: 1.2rem; margin-bottom: 0.5rem; font-family: 'Outfit', sans-serif;">${symbol}</h4>
+                    <div class="compare-stat">
+                        <span class="label" style="color: var(--text-muted)">Start Price (30d ago)</span>
+                        <span class="value">₹${stockData.start_price}</span>
+                    </div>
+                    <div class="compare-stat">
+                        <span class="label" style="color: var(--text-muted)">End Price (Latest)</span>
+                        <span class="value">₹${stockData.end_price}</span>
+                    </div>
+                    <div class="compare-stat" style="margin-top: 0.5rem; border: none;">
+                        <span class="label" style="font-weight: bold; color: var(--text-muted)">30-Day Return</span>
+                        <span class="value ${returnClass}" style="font-weight: bold; font-size: 1.1rem;">${stockData.total_return_percent}%</span>
+                    </div>
+                </div>
+            `;
+        };
+
+        html += generateCard(sym1, data[sym1]);
+        html += generateCard(sym2, data[sym2]);
+
+        resultsContainer.innerHTML = html;
+
+    } catch (error) {
+        console.error("Error comparing stocks:", error);
+        resultsContainer.innerHTML = `<div class="text-red">Error loading comparison.</div>`;
+    }
+}

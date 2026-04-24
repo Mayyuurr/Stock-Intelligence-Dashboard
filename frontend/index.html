@@ -69,6 +69,20 @@
                 </div>
             </div>
 
+            <!-- Compare Stocks Card -->
+            <div class="glass-card" id="compare-card">
+                <h3 style="margin-bottom: 1rem; font-family: 'Outfit', sans-serif;">Compare 30-Day Performance</h3>
+                <div class="compare-inputs">
+                    <input type="text" id="compareSym1" class="search-input" placeholder="Symbol 1 (e.g. AAPL)">
+                    <span style="font-weight: bold; color: var(--text-muted)">VS</span>
+                    <input type="text" id="compareSym2" class="search-input" placeholder="Symbol 2 (e.g. MSFT)">
+                    <button onclick="compareStocks()" class="btn">Compare</button>
+                </div>
+                <div id="compare-results" class="compare-results-grid">
+                    <!-- Comparison results injected here -->
+                </div>
+            </div>
+
             <!-- Chart Container -->
             <div class="glass-card">
                 <h2 id="chart-title" style="margin-bottom: 1rem; font-family: 'Outfit', sans-serif;">Select a stock to view 30-Day Trend</h2>
