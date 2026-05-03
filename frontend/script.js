@@ -1,5 +1,9 @@
+// Use localhost for testing the new local features!
+// const API_BASE = "http://localhost:8000";
 const API_BASE = "https://stock-intelligence-dashboard-lgdh.onrender.com";
+const WS_BASE = API_BASE.replace(/^http/, 'ws');
 let currentChart = null;
+let currentWebSocket = null;
 
 // Initialize dashboard on load
 document.addEventListener("DOMContentLoaded", () => {
@@ -100,6 +104,10 @@ async function searchStock(inputSymbol = null) {
 
         // Also load the chart natively so 30-day views populate
         loadStockData(symbol);
+
+        // Start the Live WebSocket Feed
+        startLiveFeed(symbol);
+
         input.value = ""; // clear input
 
     } catch (error) {
@@ -276,9 +284,9 @@ async function compareStocks() {
         }
 
         const data = await response.json();
-        
+
         let html = "";
-        
+
         // Helper to generate HTML for a single stock card
         const generateCard = (symbol, stockData) => {
             const isWinner = data.winner === symbol;
@@ -312,4 +320,63 @@ async function compareStocks() {
         console.error("Error comparing stocks:", error);
         resultsContainer.innerHTML = `<div class="text-red">Error loading comparison.</div>`;
     }
+}
+
+/**
+ * 6. Live WebSocket Feed
+ */
+function startLiveFeed(symbol) {
+    const liveFeedCard = document.getElementById("live-feed-card");
+    const livePriceEl = document.getElementById("ws-live-price");
+    const liveChangeEl = document.getElementById("ws-live-change");
+    const liveTimeEl = document.getElementById("ws-live-time");
+
+    // Reset UI
+    livePriceEl.innerText = "--";
+    livePriceEl.className = "stat-value";
+    liveChangeEl.innerText = "--";
+    liveChangeEl.className = "stat-value";
+    liveTimeEl.innerText = "--";
+    liveFeedCard.style.display = "block";
+
+    // Close existing connection if any
+    if (currentWebSocket) {
+        currentWebSocket.close();
+    }
+
+    const wsUrl = `${WS_BASE}/ws/live/${symbol}`;
+    currentWebSocket = new WebSocket(wsUrl);
+
+    currentWebSocket.onopen = () => {
+        console.log(`WebSocket connected for ${symbol}`);
+    };
+
+    currentWebSocket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.error) {
+            livePriceEl.innerText = "Error";
+            liveChangeEl.innerText = data.error;
+            return;
+        }
+
+        livePriceEl.innerText = `₹${data.live_price}`;
+
+        const changeVal = data.change_from_close;
+        const changeSign = changeVal >= 0 ? "+" : "";
+        liveChangeEl.innerText = `${changeSign}₹${changeVal.toFixed(2)}`;
+        liveChangeEl.className = `stat-value ${changeVal >= 0 ? 'text-green' : 'text-red'}`;
+
+        const now = new Date();
+        liveTimeEl.innerText = now.toLocaleTimeString();
+    };
+
+    currentWebSocket.onerror = (error) => {
+        console.error("WebSocket Error:", error);
+        livePriceEl.innerText = "Connection Failed";
+    };
+
+    currentWebSocket.onclose = () => {
+        console.log(`WebSocket disconnected for ${symbol}`);
+    };
 }
