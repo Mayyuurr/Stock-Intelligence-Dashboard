@@ -1,4 +1,6 @@
-from fastapi import FastAPI, HTTPException
+import asyncio
+import random
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import data_engine # Importing your awesome Day 1 code!
 
@@ -167,3 +169,37 @@ def get_price_prediction(symbol: str):
         "training_window": "30 Days",
         "predictions": predictions
     }
+
+@app.websocket("/ws/live/{symbol}")
+async def websocket_endpoint(websocket: WebSocket, symbol: str):
+    await websocket.accept()
+    symbol = symbol.upper()
+    
+    # Get the base price to simulate from
+    details = data_engine.search_stock_details(symbol)
+    if "error" in details or details.get("close_price") is None:
+        await websocket.send_json({"error": f"Symbol {symbol} not found"})
+        await websocket.close()
+        return
+
+    base_price = details["close_price"]
+    current_price = base_price
+
+    try:
+        while True:
+            # Simulate a small random tick movement (-0.2% to +0.2%)
+            change_percent = random.uniform(-0.002, 0.002)
+            current_price = current_price * (1 + change_percent)
+            
+            payload = {
+                "symbol": symbol,
+                "live_price": round(current_price, 2),
+                "change_from_close": round(current_price - base_price, 2),
+                "timestamp": asyncio.get_event_loop().time()
+            }
+            
+            await websocket.send_json(payload)
+            await asyncio.sleep(2) # Send update every 2 seconds
+            
+    except WebSocketDisconnect:
+        print(f"Client disconnected from WebSocket for {symbol}")
