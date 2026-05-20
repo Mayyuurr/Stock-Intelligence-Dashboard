@@ -5,17 +5,7 @@ from sklearn.linear_model import LinearRegression
 import datetime
 
 def fetch_stock_data(symbol: str, period: str = "2y") -> pd.DataFrame:
-    """
-    Fetches historical stock data for a given symbol using yfinance.
     
-    Args:
-        symbol (str): The stock ticker symbol (e.g., 'AAPL', 'RELIANCE.NS').
-        period (str): The time period to fetch data for (default is '2y').
-                      Valid periods: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max.
-    
-    Returns:
-        pd.DataFrame: A Pandas DataFrame containing the historical stock data.
-    """
     print(f"Fetching data for {symbol}...")
     try:
         # Initialize the Ticker object
