@@ -1,6 +1,6 @@
 // Use localhost for testing the new local features!
-// const API_BASE = "http://localhost:8000";
-const API_BASE = "https://stock-intelligence-dashboard-lgdh.onrender.com";
+const API_BASE = "http://localhost:8000";
+// const API_BASE = "https://stock-intelligence-dashboard-lgdh.onrender.com";
 const WS_BASE = API_BASE.replace(/^http/, 'ws');
 let currentChart = null;
 let currentWebSocket = null;
